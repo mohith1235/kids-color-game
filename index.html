@@ -32,7 +32,7 @@
 
         h1 {
             margin-top: 20px;
-            font-size: 38px;
+            font-size: 36px;
             color: cyan;
             text-shadow: 0 0 20px cyan;
         }
@@ -83,6 +83,16 @@
         button:hover {
             box-shadow: 0 0 15px #00f5ff;
         }
+
+        /* 🔴 Red Flash Effect */
+        .flash {
+            animation: flashRed 0.4s ease;
+        }
+
+        @keyframes flashRed {
+            0%   { background-color: rgba(255, 0, 0, 0.8); }
+            100% { background-color: transparent; }
+        }
     </style>
 </head>
 <body>
@@ -115,7 +125,7 @@
         let timeLeft = baseTime;
         let timer;
 
-        // Player name
+        // Player Name
         let playerName = localStorage.getItem("playerName");
         if (!playerName) {
             playerName = prompt("Enter Your Name:");
@@ -126,7 +136,7 @@
         document.getElementById("playerNameDisplay").innerText =
             "Player: " + playerName;
 
-        // High score per player
+        // High Score
         let highScoreKey = "highScore_" + playerName;
         let highScore = localStorage.getItem(highScoreKey) || 0;
         document.getElementById("highScore").innerText =
@@ -182,11 +192,31 @@
                 timeLeft = baseTime;
                 startGame();
             } else {
-                let wrong = document.getElementById("wrongSound");
-                wrong.currentTime = 0;
-                wrong.play();
-                document.getElementById("message").innerText =
-                    "Wrong! Try Again!";
+
+                // 🔴 Flash effect
+                document.body.classList.add("flash");
+                setTimeout(() => {
+                    document.body.classList.remove("flash");
+                }, 400);
+
+                clearInterval(timer);
+
+                let sound = document.getElementById("gameOverSound");
+                sound.currentTime = 0;
+                sound.play();
+
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem(highScoreKey, highScore);
+                    document.getElementById("message").innerText =
+                        "💥 WRONG! NEW HIGH SCORE: " + score;
+                } else {
+                    document.getElementById("message").innerText =
+                        "💥 WRONG! GAME OVER! Final Score: " + score;
+                }
+
+                document.getElementById("highScore").innerText =
+                    "High Score: " + highScore;
             }
         }
 
@@ -208,10 +238,10 @@
                         highScore = score;
                         localStorage.setItem(highScoreKey, highScore);
                         document.getElementById("message").innerText =
-                            "🎉 NEW HIGH SCORE! " + score;
+                            "⏰ TIME UP! NEW HIGH SCORE: " + score;
                     } else {
                         document.getElementById("message").innerText =
-                            "Game Over! Final Score: " + score;
+                            "⏰ TIME UP! Final Score: " + score;
                     }
 
                     document.getElementById("highScore").innerText =
@@ -229,6 +259,7 @@
             document.getElementById("score").innerText = "Score: 0";
             document.getElementById("message").innerText = "";
             startGame();
+            startTimer();
         }
 
         updateLevel();

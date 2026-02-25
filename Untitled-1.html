@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kids Color Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial;
+            background-color: #f0f8ff;
+        }
+
+        .box {
+            width: 120px;
+            height: 120px;
+            display: inline-block;
+            margin: 15px;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+
+        #message {
+            font-size: 22px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        #score, #timer, #highScore, #playerNameDisplay {
+            font-size: 18px;
+            margin: 8px;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 8px;
+            font-size: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎨 Click the Color: <span id="colorName"></span></h1>
+
+    <div id="playerNameDisplay"></div>
+    <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
+    <div id="timer">Time Left: 15</div>
+
+    <button onclick="restartGame()">Restart Game</button>
+
+    <h2 id="message"></h2>
+
+    <div id="boxes"></div>
+
+    <!-- GAME OVER SOUND -->
+    <audio id="gameOverSound" src="dragon-studio-cartoon-blinking-372481.mp3"></audio>
+
+    <!-- WRONG CLICK SOUND -->
+    <audio id="wrongSound" src="alexis_gaming_cam-ding-cartoon-346093.mp3"></audio>
+
+    <script>
+        const colors = ["red", "blue", "green", "yellow"];
+        let correctColor = "";
+        let score = 0;
+        let timeLeft = 15;
+        let timer;
+
+        // Ask Player Name
+        let playerName = localStorage.getItem("playerName");
+
+        if (!playerName) {
+            playerName = prompt("Enter Your Name:");
+            if (!playerName) playerName = "Player";
+            localStorage.setItem("playerName", playerName);
+        }
+
+        document.getElementById("playerNameDisplay").innerText =
+            "Player: " + playerName;
+
+        // High Score per player
+        let highScoreKey = "highScore_" + playerName;
+        let highScore = localStorage.getItem(highScoreKey) || 0;
+
+        document.getElementById("highScore").innerText =
+            "High Score: " + highScore;
+
+        function startGame() {
+            document.getElementById("boxes").innerHTML = "";
+            correctColor = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById("colorName").innerText =
+                correctColor.toUpperCase();
+            document.getElementById("message").innerText = "";
+
+            colors.forEach(color => {
+                const box = document.createElement("div");
+                box.className = "box";
+                box.style.background = color;
+                box.onclick = function () {
+                    checkColor(color);
+                };
+                document.getElementById("boxes").appendChild(box);
+            });
+        }
+
+        function checkColor(color) {
+            if (timeLeft <= 0) return;
+
+            if (color === correctColor) {
+                score++;
+                document.getElementById("score").innerText =
+                    "Score: " + score;
+                document.getElementById("message").innerText =
+                    "Correct! 🎉";
+                startGame();
+            } else {
+                let wrong = document.getElementById("wrongSound");
+                wrong.currentTime = 0;
+                wrong.play();
+                document.getElementById("message").innerText =
+                    "Wrong! Try Again!";
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+
+            timer = setInterval(function () {
+                timeLeft--;
+                document.getElementById("timer").innerText =
+                    "Time Left: " + timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+
+                    let sound = document.getElementById("gameOverSound");
+                    sound.currentTime = 0;
+                    sound.play();
+
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem(highScoreKey, highScore);
+                        document.getElementById("message").innerText =
+                            "🎉 NEW HIGH SCORE! " + score;
+                    } else {
+                        document.getElementById("message").innerText =
+                            "Game Over! Final Score: " + score;
+                    }
+
+                    document.getElementById("highScore").innerText =
+                        "High Score: " + highScore;
+                }
+
+            }, 1000);
+        }
+
+        function restartGame() {
+            score = 0;
+            timeLeft = 15;
+            document.getElementById("score").innerText = "Score: 0";
+            document.getElementById("timer").innerText = "Time Left: 15";
+            document.getElementById("message").innerText = "";
+            startGame();
+            startTimer();
+        }
+
+        startGame();
+        startTimer();
+    </script>
+
+</body>
+</html>
